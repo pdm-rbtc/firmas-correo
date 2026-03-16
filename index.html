@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Signatures — Grup Rubatec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e2e5ea;
+      --text: #1a1d23;
+      --text-secondary: #5f6672;
+      --accent: #001d72;
+      --accent-light: #e8ecf6;
+      --success: #16a34a;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .top-bar {
+      background: var(--accent);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background .3s;
+    }
+    .top-bar svg { flex-shrink: 0; }
+    .top-bar-text h1 { color: #fff; font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+    .top-bar-text span { color: rgba(255,255,255,.55); font-size: 13px; font-weight: 400; }
+    .top-bar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+    .lang-btn {
+      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 99px;
+      background: transparent;
+      color: rgba(255,255,255,.6);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .03em;
+    }
+    .lang-btn:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+    .lang-btn.active { background: rgba(255,255,255,.18); color: #fff; border-color: rgba(255,255,255,.4); }
+
+    /* ── Layout ── */
+    .layout {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .preview-area { position: static !important; }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-header h2 { font-size: 14px; font-weight: 600; }
+    .card-header .step {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background .3s;
+    }
+    .card-body { padding: 22px; }
+
+    /* ── Form ── */
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+    .field input, .field select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .field input::placeholder { color: #b0b5be; }
+    .field .hint { font-size: 11px; color: #9ca3ae; margin-top: 4px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .custom-address { margin-top: 8px; display: none; }
+    .custom-address.visible { display: block; }
+
+    /* ── Company pills ── */
+    .company-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .company-tab {
+      padding: 8px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #fff;
+      color: var(--text-secondary);
+      transition: all .15s;
+    }
+    .company-tab:hover { border-color: var(--accent); color: var(--text); }
+    .company-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Preview ── */
+    .preview-area { position: sticky; top: 24px; }
+    .preview-box {
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 160px;
+      background: repeating-conic-gradient(#f7f8fa 0% 25%, transparent 0% 50%) 50%/20px 20px;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow-x: auto;
+    }
+    .preview-empty { color: var(--text-secondary); font-size: 13px; text-align: center; padding: 40px 20px; }
+
+    /* ── Actions ── */
+    .actions {
+      padding: 16px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; transition: background .3s; }
+    .btn-primary:hover { filter: brightness(1.3); }
+    .btn-secondary { background: var(--accent-light); color: var(--accent); transition: all .3s; }
+    .btn-secondary:hover { filter: brightness(.95); }
+    .btn svg { flex-shrink: 0; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text); color: #fff;
+      padding: 12px 22px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      opacity: 0; transition: all .3s cubic-bezier(.4,0,.2,1);
+      pointer-events: none; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+
+    /* ── Instructions ── */
+    .instructions { margin-top: 20px; }
+    .instructions summary {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; padding: 10px 0;
+      list-style: none; display: flex; align-items: center; gap: 6px;
+    }
+    .instructions summary::before { content: '▸'; transition: transform .2s; }
+    .instructions[open] summary::before { transform: rotate(90deg); }
+    .instructions ol {
+      padding: 12px 16px 12px 30px;
+      font-size: 13px; color: var(--text-secondary); line-height: 1.7;
+      background: var(--accent-light); border-radius: 7px; transition: background .3s;
+    }
+    .instructions li { margin-bottom: 4px; }
+    .instructions li:last-child { margin-bottom: 0; }
+    .instructions code { background: rgba(0,29,114,.08); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ Top bar ═══ -->
+<div class="top-bar" id="topBar">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="rgba(255,255,255,.12)"/><path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <div class="top-bar-text">
+    <h1 data-i18n="title">Generador de Signatures de Correu</h1>
+    <span>Grup Rubatec</span>
+  </div>
+  <div class="top-bar-right">
+    <button class="lang-btn active" data-lang="ca" onclick="setLang('ca')">CA</button>
+    <button class="lang-btn" data-lang="es" onclick="setLang('es')">ES</button>
+  </div>
+</div>
+
+<!-- ═══ Main layout ═══ -->
+<div class="layout">
+
+  <!-- LEFT: Form -->
+  <div class="form-col">
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="step">1</span>
+        <h2 data-i18n="step1">Empresa</h2>
+      </div>
+      <div class="card-body">
+        <div class="company-tabs" id="companyTabs">
+          <button class="company-tab active" data-company="rubatec" onclick="selectCompany(this)">S.I.M. Rubatec</button>
+          <button class="company-tab" data-company="civis" onclick="selectCompany(this)">Civis Infraestructuras</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="step">2</span>
+        <h2 data-i18n="step2">Dades personals</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label data-i18n="lbl_name">Nom complet</label>
+          <input type="text" id="inputName" data-i18n-ph="ph_name" placeholder="p. ex. Maria García López" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label data-i18n="lbl_position">Càrrec / Posició</label>
+          <input type="text" id="inputPosition" data-i18n-ph="ph_position" placeholder="p. ex. Directora de Projectes" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label data-i18n="lbl_position2">Informació addicional <span style="text-transform:none;font-weight:400;color:#b0b5be;">(opcional)</span></label>
+          <input type="text" id="inputPosition2" data-i18n-ph="ph_position2" placeholder="p. ex. Departament d'Enginyeria" oninput="updatePreview()">
+          <div class="hint" data-i18n="hint_position2">Es mostrarà com a segona línia sota el càrrec.</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label data-i18n="lbl_phone">Telèfon</label>
+            <input type="tel" id="inputPhone" placeholder="+34 93 225 94 60" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label data-i18n="lbl_email">Correu electrònic</label>
+            <input type="email" id="inputEmail" placeholder="nom@rubatec.cat" oninput="updatePreview()">
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="lbl_address">Adreça</label>
+          <select id="inputAddress" onchange="handleAddressChange()">
+            <option value="C/ Doctor Trueta, 13 – 08005 Barcelona">C/ Doctor Trueta, 13 – 08005 Barcelona</option>
+            <option value="Av. de la Fama, 41 – 08940 Cornellà de Llobregat">Av. de la Fama, 41 – 08940 Cornellà de Llobregat</option>
+            <option value="C/ Motors, 3 – 08908 L'Hospitalet de Llobregat">C/ Motors, 3 – 08908 L'Hospitalet de Llobregat</option>
+            <option value="Av. Segle XXI, 72 – 08840 Viladecans">Av. Segle XXI, 72 – 08840 Viladecans</option>
+            <option value="Ctra. de l'Hospitalet, 147, Ed. Berlin, 2n B – 08940 Cornellà">Ctra. de l'Hospitalet, 147, Ed. Berlin, 2n B – 08940 Cornellà</option>
+            <option value="__custom" data-i18n-text="opt_other">Altra adreça…</option>
+          </select>
+          <div class="custom-address" id="customAddressWrap">
+            <input type="text" id="inputCustomAddress" data-i18n-ph="ph_custom_addr" placeholder="Escriu l'adreça personalitzada" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <details class="instructions">
+      <summary data-i18n="instructions_title">Com configuro la signatura a Gmail?</summary>
+      <ol>
+        <li data-i18n="instr_1">Omple les teves dades i selecciona l'empresa.</li>
+        <li data-i18n="instr_2">Fes clic a <strong>«Copiar signatura»</strong> a la previsualització.</li>
+        <li data-i18n="instr_3">Obre Gmail → <code>Configuració</code> (icona d'engranatge) → <code>Veure tots els paràmetres</code>.</li>
+        <li data-i18n="instr_4">Baixa fins a la secció <strong>«Signatura»</strong>.</li>
+        <li data-i18n="instr_5">Crea una signatura nova o edita l'existent.</li>
+        <li data-i18n="instr_6">Enganxa (<code>Ctrl+V</code> / <code>⌘V</code>) dins del camp de text de la signatura.</li>
+        <li data-i18n="instr_7">Desa els canvis al final de la pàgina.</li>
+      </ol>
+    </details>
+  </div>
+
+  <!-- RIGHT: Preview -->
+  <div class="preview-area">
+    <div class="card">
+      <div class="card-header">
+        <span class="step">3</span>
+        <h2 data-i18n="step3">Previsualització</h2>
+      </div>
+      <div class="preview-box" id="previewBox">
+        <div class="preview-empty" data-i18n="preview_empty">Comença a omplir les dades per veure la signatura.</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="copySignature()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a1 1 0 0 1 1-1h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-i18n="btn_copy">Copiar signatura</span>
+        </button>
+        <button class="btn btn-secondary" onclick="downloadHTML()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M8 2v8m0 0-3-3m3 3 3-3M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="btn_download">Descarregar HTML</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// i18n — UI only (signature content stays as user typed)
+// ═══════════════════════════════════════════
+const I18N = {
+  ca: {
+    title: 'Generador de Signatures de Correu',
+    step1: 'Empresa', step2: 'Dades personals', step3: 'Previsualització',
+    lbl_name: 'Nom complet', ph_name: 'p. ex. Maria García López',
+    lbl_position: 'Càrrec / Posició', ph_position: 'p. ex. Directora de Projectes',
+    lbl_position2: 'Informació addicional <span style="text-transform:none;font-weight:400;color:#b0b5be;">(opcional)</span>',
+    ph_position2: "p. ex. Departament d'Enginyeria",
+    hint_position2: 'Es mostrarà com a segona línia sota el càrrec.',
+    lbl_phone: 'Telèfon', lbl_email: 'Correu electrònic', lbl_address: 'Adreça',
+    opt_other: 'Altra adreça…', ph_custom_addr: "Escriu l'adreça personalitzada",
+    instructions_title: 'Com configuro la signatura a Gmail?',
+    instr_1: "Omple les teves dades i selecciona l'empresa.",
+    instr_2: 'Fes clic a <strong>«Copiar signatura»</strong> a la previsualització.',
+    instr_3: "Obre Gmail → <code>Configuració</code> (icona d'engranatge) → <code>Veure tots els paràmetres</code>.",
+    instr_4: 'Baixa fins a la secció <strong>«Signatura»</strong>.',
+    instr_5: "Crea una signatura nova o edita l'existent.",
+    instr_6: 'Enganxa (<code>Ctrl+V</code> / <code>⌘V</code>) dins del camp de text de la signatura.',
+    instr_7: 'Desa els canvis al final de la pàgina.',
+    preview_empty: 'Comença a omplir les dades per veure la signatura.',
+    btn_copy: 'Copiar signatura', btn_download: 'Descarregar HTML',
+    toast_copied: 'Signatura copiada! Enganxa-la a Gmail.',
+    toast_downloaded: 'Fitxer HTML descarregat!',
+    toast_no_name: 'Introdueix almenys el nom per generar la signatura.',
+    toast_copy_fail: "No s'ha pogut copiar. Prova de seleccionar manualment la previsualització.",
+  },
+  es: {
+    title: 'Generador de Firmas de Correo',
+    step1: 'Empresa', step2: 'Datos personales', step3: 'Previsualización',
+    lbl_name: 'Nombre completo', ph_name: 'p. ej. María García López',
+    lbl_position: 'Cargo / Posición', ph_position: 'p. ej. Directora de Proyectos',
+    lbl_position2: 'Información adicional <span style="text-transform:none;font-weight:400;color:#b0b5be;">(opcional)</span>',
+    ph_position2: 'p. ej. Departamento de Ingeniería',
+    hint_position2: 'Se mostrará como segunda línea bajo el cargo.',
+    lbl_phone: 'Teléfono', lbl_email: 'Correo electrónico', lbl_address: 'Dirección',
+    opt_other: 'Otra dirección…', ph_custom_addr: 'Escribe la dirección personalizada',
+    instructions_title: '¿Cómo configuro la firma en Gmail?',
+    instr_1: 'Rellena tus datos y selecciona la empresa.',
+    instr_2: 'Haz clic en <strong>«Copiar firma»</strong> en la previsualización.',
+    instr_3: 'Abre Gmail → <code>Configuración</code> (icono de engranaje) → <code>Ver todos los ajustes</code>.',
+    instr_4: 'Baja hasta la sección <strong>«Firma»</strong>.',
+    instr_5: 'Crea una firma nueva o edita la existente.',
+    instr_6: 'Pega (<code>Ctrl+V</code> / <code>⌘V</code>) en el campo de texto de la firma.',
+    instr_7: 'Guarda los cambios al final de la página.',
+    preview_empty: 'Empieza a rellenar los datos para ver la firma.',
+    btn_copy: 'Copiar firma', btn_download: 'Descargar HTML',
+    toast_copied: '¡Firma copiada! Pégala en Gmail.',
+    toast_downloaded: '¡Archivo HTML descargado!',
+    toast_no_name: 'Introduce al menos el nombre para generar la firma.',
+    toast_copy_fail: 'No se ha podido copiar. Intenta seleccionar manualmente la previsualización.',
+  }
+};
+let currentLang = 'ca';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  document.documentElement.lang = lang;
+  const tr = I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (tr[k] !== undefined) el.innerHTML = tr[k]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { const k = el.dataset.i18nPh; if (tr[k] !== undefined) el.placeholder = tr[k]; });
+  document.querySelectorAll('[data-i18n-text]').forEach(el => { const k = el.dataset.i18nText; if (tr[k] !== undefined) el.textContent = tr[k]; });
+  updatePreview();
+}
+function tr(key) { return I18N[currentLang][key] || key; }
+
+// ═══════════════════════════════════════════
+// COMPANY CONFIG
+// ═══════════════════════════════════════════
+const COMPANIES = {
+  rubatec: {
+    name: 'S.I.M. Rubatec',
+    legalName: 'SERVEIS INTEGRALS DE MANTENIMENT RUBATEC, S.A.',
+    // Replace with GitHub Pages / self-hosted URL:
+    logoUrl: 'https://media.marka-img.com/57e739d4/PpKbrk3Sqa3u2HQjmW0t4NCLq5Lwam.png',
+    logoWidth: 133,
+    website: 'www.rubatec.es',
+    websiteUrl: 'https://www.rubatec.es',
+    accentColor: '#001d72',
+    accentLight: '#e8ecf6',
+  },
+  civis: {
+    name: 'Civis Infraestructuras',
+    legalName: 'CIVIS INFRAESTRUCTURAS, S.A.',
+    // PLACEHOLDER — replace with real logo:
+    logoUrl: 'https://via.placeholder.com/400x165/D6006F/ffffff?text=CIVIS',
+    logoWidth: 133,
+    website: 'www.civis.es',
+    websiteUrl: 'https://www.civis.es',
+    accentColor: '#D6006F',
+    accentLight: '#fce8f1',
+  },
+};
+let currentCompany = 'rubatec';
+
+// ═══════════════════════════════════════════
+// SVG ICONS — inline, accent-colored, no hosting needed
+// Encoded as data URIs for email client compat
+// ═══════════════════════════════════════════
+function iconDataUri(type, color) {
+  const svgs = {
+    phone: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+    email: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+    web: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    location: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  };
+  return 'data:image/svg+xml,' + encodeURIComponent(svgs[type] || '');
+}
+
+// ═══════════════════════════════════════════
+// DISCLAIMER
+// ═══════════════════════════════════════════
+function getDisclaimer() {
+  const co = COMPANIES[currentCompany];
+  return `Advertencia: Este mensaje se dirige exclusivamente a su destinatario, siendo de uso exclusivo para el/los destinatario/s de este correo electrónico. Puede contener información confidencial por tanto si ha recibido este mensaje por error, le rogamos que nos lo comunique inmediatamente y proceda a su destrucción. Queda prohibida cualquier difusión, reproducción parcial o total de su contenido sin la autorización del remitente. ${co.legalName} le informa que sus datos podrán ser tratados para prestarle satisfactoriamente los servicios solicitados y hacerle llegar información de su interés por cualquier medio, en conformidad con el RGPD. Puede ejercer sus derechos de acceso, rectificación, supresión, portabilidad, limitación y oposición dirigiéndose, por correo postal a C/ Dr. Trueta nº 13. 08005 de BARCELONA, indicando como referencia "derechos RGPD". Si sus derechos no fueran atendidos puede Ud. acudir a la AEPD (Agencia Española de Protección de Datos).`;
+}
+
+// ═══════════════════════════════════════════
+// UI THEMING
+// ═══════════════════════════════════════════
+function applyTheme() {
+  const co = COMPANIES[currentCompany];
+  document.documentElement.style.setProperty('--accent', co.accentColor);
+  document.documentElement.style.setProperty('--accent-light', co.accentLight);
+}
+
+function selectCompany(btn) {
+  document.querySelectorAll('.company-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentCompany = btn.dataset.company;
+  applyTheme();
+  updatePreview();
+}
+
+// ═══════════════════════════════════════════
+// ADDRESS
+// ═══════════════════════════════════════════
+function handleAddressChange() {
+  const sel = document.getElementById('inputAddress');
+  const wrap = document.getElementById('customAddressWrap');
+  if (sel.value === '__custom') { wrap.classList.add('visible'); document.getElementById('inputCustomAddress').focus(); }
+  else { wrap.classList.remove('visible'); }
+  updatePreview();
+}
+function getAddress() {
+  const sel = document.getElementById('inputAddress');
+  return sel.value === '__custom' ? document.getElementById('inputCustomAddress').value.trim() : sel.value;
+}
+
+// ═══════════════════════════════════════════
+// GENERATE SIGNATURE HTML
+// Clean, flat table structure. No third-party refs.
+// Fixed-width left column prevents text-push.
+// Address uses nowrap to stay on one line.
+// ═══════════════════════════════════════════
+function generateSignatureHTML(data) {
+  const co = COMPANIES[currentCompany];
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  const name      = esc(data.name || '');
+  const position  = esc(data.position || '');
+  const position2 = esc(data.position2 || '');
+  const phone     = esc(data.phone || '');
+  const email     = esc(data.email || '');
+  const address   = esc(data.address || '');
+  const accent    = co.accentColor;
+
+  // Position line(s)
+  let posHtml = '';
+  if (position) posHtml += `<span style="color:#667085;font-family:Inter,Arial,sans-serif;font-size:10px;line-height:14px;">${position}</span>`;
+  if (position2) posHtml += `<br><span style="color:#667085;font-family:Inter,Arial,sans-serif;font-size:10px;line-height:14px;">${position2}</span>`;
+
+  // Contact row helper
+  function row(iconType, text, href, fontSize = '10px') {
+    const uri = iconDataUri(iconType, accent);
+    const inner = href
+      ? `<a style="color:#101828;font-family:Inter,Arial,sans-serif;font-size:${fontSize};line-height:12px;text-decoration:none;white-space:nowrap;" href="${href}">${text}</a>`
+      : `<span style="color:#101828;font-family:Inter,Arial,sans-serif;font-size:${fontSize};line-height:12px;white-space:nowrap;">${text}</span>`;
+    return `<tr><td style="padding-bottom:3px;vertical-align:middle;" valign="middle">
+      <table cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+        <td style="vertical-align:middle;" valign="middle" width="10"><img src="${uri}" width="10" height="10" border="0" style="width:10px;height:10px;display:block;"></td>
+        <td style="width:6px;" width="6"></td>
+        <td style="vertical-align:middle;" valign="middle">${inner}</td>
+      </tr></table>
+    </td></tr>`;
+  }
+
+  const disclaimer = getDisclaimer();
+
+  return `<table cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+<tr><td style="padding:10px;background-color:#ffffff;" bgcolor="#ffffff">
+  <table cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+    <tr>
+      <td style="vertical-align:middle;width:155px;max-width:155px;padding-right:10px;border-right:1px solid ${accent};" valign="middle" width="155">
+        <table cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;width:145px;max-width:145px;">
+          <tr><td>
+            <div style="line-height:20px;"><span style="color:#101828;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:15px;line-height:20px;">${name}</span></div>
+          </td></tr>
+          ${posHtml ? `<tr><td><div style="line-height:14px;padding-top:1px;">${posHtml}</div></td></tr>` : ''}
+          <tr><td style="padding-top:6px;">
+            <img src="${co.logoUrl}" width="${co.logoWidth}" border="0" style="width:${co.logoWidth}px;height:auto;display:block;">
+          </td></tr>
+        </table>
+      </td>
+      <td style="vertical-align:middle;padding-left:12px;" valign="middle">
+        <table cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+          ${phone   ? row('phone',   phone,      'tel:' + phone.replace(/\s/g,''))    : ''}
+          ${email   ? row('email',   email,      'mailto:' + email)                   : ''}
+          ${co.website ? row('web',  co.website, co.websiteUrl)                       : ''}
+          ${address ? row('location', address,   null, '9px')                         : ''}
+        </table>
+      </td>
+    </tr>
+  </table>
+</td></tr>
+<tr><td style="padding:8px 10px 4px 10px;">
+  <p style="margin:0;font-family:Inter,Arial,sans-serif;font-size:7px;line-height:10px;color:#667085;font-style:italic;max-width:500px;">${disclaimer}</p>
+</td></tr>
+</table>`;
+}
+
+// ═══════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════
+function getFormData() {
+  return {
+    name:      document.getElementById('inputName').value.trim(),
+    position:  document.getElementById('inputPosition').value.trim(),
+    position2: document.getElementById('inputPosition2').value.trim(),
+    phone:     document.getElementById('inputPhone').value.trim(),
+    email:     document.getElementById('inputEmail').value.trim(),
+    address:   getAddress(),
+  };
+}
+function updatePreview() {
+  const data = getFormData();
+  const box = document.getElementById('previewBox');
+  if (!data.name && !data.position && !data.phone && !data.email) {
+    box.innerHTML = `<div class="preview-empty">${tr('preview_empty')}</div>`;
+    return;
+  }
+  box.innerHTML = generateSignatureHTML(data);
+}
+
+// ═══════════════════════════════════════════
+// COPY (rich text for Gmail paste)
+// ═══════════════════════════════════════════
+async function copySignature() {
+  const data = getFormData();
+  if (!data.name) { showToast(tr('toast_no_name')); return; }
+  const html = generateSignatureHTML(data);
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }) })]);
+    showToast(tr('toast_copied'), true);
+  } catch {
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById('previewBox'));
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      sel.removeAllRanges();
+      showToast(tr('toast_copied'), true);
+    } catch { showToast(tr('toast_copy_fail')); }
+  }
+}
+
+// ═══════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════
+function downloadHTML() {
+  const data = getFormData();
+  if (!data.name) { showToast(tr('toast_no_name')); return; }
+  const html = generateSignatureHTML(data);
+  const blob = new Blob([html], { type: 'text/html' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = data.name.replace(/\s+/g, '_') + '_signatura.html';
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+  showToast(tr('toast_downloaded'), true);
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+let toastTimeout;
+function showToast(msg, success = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (success ? ' success' : '');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+
+// Init
+applyTheme();
+</script>
+</body>
+</html>
