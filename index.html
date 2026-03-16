@@ -135,23 +135,6 @@
     .custom-address { margin-top: 8px; display: none; }
     .custom-address.visible { display: block; }
 
-    /* ── Company pills ── */
-    .company-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .company-tab {
-      padding: 8px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 99px;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      background: #fff;
-      color: var(--text-secondary);
-      transition: all .15s;
-    }
-    .company-tab:hover { border-color: var(--accent); color: var(--text); }
-    .company-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
     /* ── Preview ── */
     .preview-area { position: sticky; top: 24px; }
     .preview-box {
@@ -253,9 +236,11 @@
         <h2 data-i18n="step1">Empresa</h2>
       </div>
       <div class="card-body">
-        <div class="company-tabs" id="companyTabs">
-          <button class="company-tab active" data-company="rubatec" onclick="selectCompany(this)">S.I.M. Rubatec</button>
-          <button class="company-tab" data-company="civis" onclick="selectCompany(this)">Civis Infraestructuras</button>
+        <div class="field" style="margin-bottom:0;">
+          <select id="companySelect" onchange="selectCompany(this.value)">
+            <option value="civis">Civis Infraestructuras</option>
+            <option value="rubatec">S.I.M. Rubatec</option>
+          </select>
         </div>
       </div>
     </div>
@@ -421,30 +406,30 @@ function tr(key) { return I18N[currentLang][key] || key; }
 // COMPANY CONFIG
 // ═══════════════════════════════════════════
 const COMPANIES = {
+  civis: {
+    name: 'Civis Infraestructuras',
+    legalName: 'CIVIS INFRAESTRUCTURAS, S.A.',
+    // Replace with your GitHub-hosted logo URL:
+    logoUrl: 'https://raw.githubusercontent.com/pdm-rbtc/firmas-correo/refs/heads/main/img/civis-logotipo-firma.png',
+    logoWidth: 100, // Tune this to match your logo's visual weight (100–133px range)
+    website: '',     // No website for Civis
+    websiteUrl: '',
+    accentColor: '#D6006F',
+    accentLight: '#fce8f1',
+  },
   rubatec: {
     name: 'S.I.M. Rubatec',
     legalName: 'SERVEIS INTEGRALS DE MANTENIMENT RUBATEC, S.A.',
-    // Replace with GitHub Pages / self-hosted URL:
+    // Replace with your GitHub-hosted logo URL:
     logoUrl: 'https://raw.githubusercontent.com/pdm-rbtc/firmas-correo/refs/heads/main/img/rubatec-logotipo-firma.png',
-    logoWidth: 133,
+    logoWidth: 100, // Reduced from 133 — tune to match visual weight with your new logo file
     website: 'www.rubatec.es',
     websiteUrl: 'https://www.rubatec.es',
     accentColor: '#001d72',
     accentLight: '#e8ecf6',
   },
-  civis: {
-    name: 'Civis Infraestructuras',
-    legalName: 'CIVIS INFRAESTRUCTURAS, S.A.',
-    // PLACEHOLDER — replace with real logo:
-    logoUrl: 'https://raw.githubusercontent.com/pdm-rbtc/firmas-correo/refs/heads/main/img/civis-logotipo-firma.png',
-    logoWidth: 133,
-    website: 'www.civis.es',
-    websiteUrl: 'https://www.civis.es',
-    accentColor: '#D6006F',
-    accentLight: '#fce8f1',
-  },
 };
-let currentCompany = 'rubatec';
+let currentCompany = 'civis';
 
 // ═══════════════════════════════════════════
 // SVG ICONS — inline, accent-colored, no hosting needed
@@ -477,10 +462,8 @@ function applyTheme() {
   document.documentElement.style.setProperty('--accent-light', co.accentLight);
 }
 
-function selectCompany(btn) {
-  document.querySelectorAll('.company-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  currentCompany = btn.dataset.company;
+function selectCompany(companyKey) {
+  currentCompany = companyKey;
   applyTheme();
   updatePreview();
 }
